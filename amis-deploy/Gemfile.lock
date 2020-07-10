@@ -1,0 +1,66 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    async (1.26.2)
+      console (~> 1.0)
+      nio4r (~> 2.3)
+      timers (~> 4.1)
+    async-container (0.16.7)
+      async (~> 1.0)
+      async-io (~> 1.26)
+    async-http (0.52.4)
+      async (~> 1.25)
+      async-io (~> 1.28)
+      async-pool (~> 0.2)
+      protocol-http (~> 0.20.0)
+      protocol-http1 (~> 0.13.0)
+      protocol-http2 (~> 0.14.0)
+    async-http-cache (0.2.0)
+      async-http (~> 0.51)
+    async-io (1.30.0)
+      async (~> 1.14)
+    async-pool (0.3.2)
+      async (~> 1.25)
+    build-environment (1.13.0)
+    console (1.8.2)
+    falcon (0.36.4)
+      async (~> 1.13)
+      async-container (~> 0.16.0)
+      async-http (~> 0.52.0)
+      async-http-cache (~> 0.2.0)
+      async-io (~> 1.22)
+      build-environment (~> 1.13)
+      localhost (~> 1.1)
+      process-metrics (~> 0.2.0)
+      rack (>= 1.0)
+      samovar (~> 2.1)
+    localhost (1.1.6)
+    mapping (1.1.1)
+    nio4r (2.5.2)
+    process-metrics (0.2.1)
+      console (~> 1.8)
+      samovar (~> 2.1)
+    protocol-hpack (1.4.2)
+    protocol-http (0.20.0)
+    protocol-http1 (0.13.0)
+      protocol-http (~> 0.19)
+    protocol-http2 (0.14.0)
+      protocol-hpack (~> 1.4)
+      protocol-http (~> 0.18)
+    rack (2.2.3)
+    samovar (2.1.4)
+      console (~> 1.0)
+      mapping (~> 1.0)
+    timers (4.3.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  falcon
+
+RUBY VERSION
+   ruby 2.7.1p83
+
+BUNDLED WITH
+   2.1.4
