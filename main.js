@@ -1,7 +1,7 @@
 (function(){
   var GET_SUCCESS = 'GET_SUCCESS';
   var GET_FAILURE = 'GET_FAILURE';
-  var isCordova, isMoedictDesktop, DEBUGGING, ref$, STANDALONE, ref1$, any, map, unique, React, LANG, MOEID, XREFLABELOF, TITLEOF, HASHOF, STARRED, key, LRU, res$, isQuery, isDroidGap, isDeviceReady, isMobile, isApp, isWebKit, isGecko, isChrome, isPrerendered, widthIsXs, entryHistory, INDEX, STEM, CH_STEM_MAPPING, XREF, CACHED, addToLru, Success, Failure, GET, e, playing, player, seq, getEl, callLater, han_amis_lookup, LoadedScripts, split$ = ''.split, replace$ = ''.replace, join$ = [].join;
+  var isCordova, isMoedictDesktop, DEBUGGING, ref$, STANDALONE, ref1$, any, map, unique, React, LANG, MOEID, XREFLABELOF, TITLEOF, PREFIX_OF, STARRED, key, LRU, res$, isQuery, isDroidGap, isDeviceReady, isMobile, isApp, isWebKit, isGecko, isChrome, isPrerendered, widthIsXs, entryHistory, INDEX, STEM, CH_STEM_MAPPING, XREF, CACHED, addToLru, Success, Failure, GET, e, playing, player, seq, getEl, callLater, han_amis_lookup, LoadedScripts, split$ = ''.split, replace$ = ''.replace, join$ = [].join;
 
   window.isCordova = isCordova = !/^https?:/.test(document.URL) && !/^http:\/\/localhost/.test(document.URL);
 
@@ -63,30 +63,30 @@
     s: '蔡中涵'
   };
 
-  HASHOF = {
-    p: '#~',
-    m: "#!",
-    s: '#:'
+  PREFIX_OF = {
+    p: '~',
+    m: "!",
+    s: ':'
   };
 
   if ((isCordova || DEBUGGING) && !window.ALL_LANGUAGES) {
     if (STANDALONE) {
-      HASHOF = (ref1$ = {}, ref1$[STANDALONE + ""] = HASHOF[STANDALONE], ref1$);
+      PREFIX_OF = (ref1$ = {}, ref1$[STANDALONE + ""] = PREFIX_OF[STANDALONE], ref1$);
     } else {
-      delete HASHOF.c;
+      delete PREFIX_OF.c;
     }
   }
 
   window.STARRED = STARRED = (function(){
     var resultObj$ = {};
-    for (key in HASHOF) {
+    for (key in PREFIX_OF) {
       resultObj$[key] = getPref("starred-" + key) || "";
     }
     return resultObj$;
   }());
 
   res$ = {};
-  for (key in HASHOF) {
+  for (key in PREFIX_OF) {
     res$[key] = getPref("lru-" + key) || "";
   }
   LRU = res$;
@@ -281,24 +281,10 @@
       return stopAudio();
     }, false);
   } catch (e$) {
-    e = e$;
     $(function(){
-      var url;
       $('#F9868').html('&#xF9868;');
       $('#loading').text('載入中，請稍候……');
-      if (/^http:\/\/(?:www.)?moedict.tw/i.exec(document.URL)) {
-        url = "https://amis.moedict.tw/";
-        if (/^#./.exec(location.hash)) {
-          url += location.hash;
-        }
-        return location.replace(url);
-      } else {
-        if (/MSIE\s+[678]/.exec(navigator.userAgent)) {
-          $('.navbar, .query-box').hide();
-          $('#result').css('margin-top', '50px');
-        }
-        return window.doLoad();
-      }
+      return window.doLoad();
     });
   }
 
@@ -611,7 +597,7 @@
         if ($('#query').val() === '=*') {
           window.pressBack();
         } else {
-          grokVal((HASHOF[LANG] + "=*").replace(/^#/, ''));
+          grokVal((PREFIX_OF[LANG] + "=*"));
         }
         return false;
       }).on('click', '#btn-pref', function(e){
@@ -657,7 +643,7 @@
           return;
         }
         val = $(this).attr('href');
-        if (val === '#' || val === '#~') {
+        if (LANG === 's') {
           return true;
         }
         if ($('.dropdown.open').length) {
@@ -665,16 +651,16 @@
           $('.dropdown.open').removeClass('open');
         }
         if (val) {
-          val = replace$.call(val, /[^#]*(\.\/|\#)+/, '');
+          val = replace$.call(val, /^(\.\/)+/, '');
         }
         val || (val = $(this).text());
         window.grokVal(val);
         return false;
       };
       if (isCordova || !'onhashchange' in window) {
-        $('#result, .dropdown-menu').on('click', 'a[href^="#"]:not(.mark)', onFollow);
+        $('#result, .dropdown-menu').on('click', 'a[href^="./"]:not(.mark)', onFollow);
       } else {
-        $('#result, .dropdown-menu').on('click', 'a[href^="./"]:not([href^="#"]):not(.mark)', onFollow);
+        $('#result, .dropdown-menu').on('click', 'a[href^="./"]:not(.mark)', onFollow);
       }
       if (!isDroidGap) {
         window.onpopstate = function(){
@@ -698,7 +684,7 @@
       if (isCordova) {
         fillQuery(MOEID);
         return $('#query').val('');
-      } else if (!/^#./.test(location.hash)) {
+      } else if (!/^(~|!|:)./.test(location.hash)) {
         return fetch(MOEID);
       }
     };
@@ -753,11 +739,11 @@
     };
 
     window.grokHash = grokHash = function(){
-      if (!/^#./.test(location.hash)) {
+      if (!/^(~|!|:)./.test(location.hash)) {
         return false;
       }
       try {
-        grokVal(decodeHash((location.hash + "").replace(/^#+/, '')));
+        grokVal(decodeHash((location.hash + "").replace(/^(~|!|:)+/, '')));
         return true;
       } catch (e$) {}
       return false;
@@ -808,7 +794,6 @@
       var i$, ref$, ref1$, len$, ref2$, words;
       lang == null && (lang = '');
       id == null && (id = '');
-      id = replace$.call(id, /#/g, '');
       if (STANDALONE) {
         return;
       }
@@ -931,7 +916,7 @@
       if (!isCordova) {
         $('form[id=lookback] input[id=cond]').val("^" + title + "$");
       }
-      hist = HASHOF[LANG].slice(1) + "" + title;
+      hist = `${PREFIX_OF[LANG]}${title}`;
       if (!(entryHistory.length && entryHistory[entryHistory.length - 1] === hist)) {
         entryHistory.push(hist);
       }
@@ -945,7 +930,7 @@
     };
 
     res$ = {};
-    for (key in HASHOF) {
+    for (key in PREFIX_OF) {
       res$[key] = [];
     }
     htmlCache = res$;
@@ -961,7 +946,7 @@
       prevId = it;
       prevVal = it;
       setPref('prev-id', prevId);
-      hash = HASHOF[LANG] + "" + it;
+      hash = `${PREFIX_OF[LANG]}${it}`;
       if (!isQuery) {
         if (isPrerendered || /^https:\/\/(?:www.)?moedict.tw/i.exec(document.URL)) {
           page = hash.slice(1);
@@ -973,7 +958,7 @@
                 history.pushState(null, null, page);
               }
             } else {
-              if ((location.hash + "").replace(/^#/, '') !== page) {
+              if ((location.hash + "").replace(/^(~|!|:)/, '') !== page) {
                 location.replace(hash);
               }
             }
@@ -1103,7 +1088,7 @@
           items: 'a',
           open: function(){
             var id;
-            id = $(this).attr('href').replace(/^(\.\/)?#?['!:~;\|]?/, '');
+            id = $(this).attr('href').replace(/^(\.\/)?['!:~;\|]?/, '');
             if (entryHistory.length && entryHistory[entryHistory.length - 1] === id) {
               try {
                 $(this).tooltip('close');
@@ -1112,7 +1097,7 @@
           },
           content: function(cb){
             var id;
-            id = $(this).attr('href').replace(/^(\.\/)?#?['!:~;\|]?/, '');
+            id = $(this).attr('href').replace(/^(\.\/)?['!:~;\|]?/, '');
             if (LANG === 'p' || LANG === 'm' || LANG === 's') {
               id = id.toLowerCase();
             }
@@ -1169,7 +1154,7 @@
           id: id,
           type: 'list',
           terms: part,
-          H: HASHOF[LANG],
+          H: PREFIX_OF[LANG],
           LRU: LRU[LANG]
         };
       } else {
@@ -1189,7 +1174,7 @@
           xrefs: xrefs,
           LANG: LANG,
           type: 'term',
-          H: HASHOF[LANG]
+          H: PREFIX_OF[LANG]
         }, $.parseJSON(part));
       }
       if (cb) {
@@ -1259,7 +1244,7 @@
           role: 'presentation'
         }).append($('<a/>', {
           'class': "lang-option " + lang,
-          href: "./" + HASHOF[lang] + "=" + taxo
+          href: `./${PREFIX_OF[lang]}=${taxo}`
         }).text(taxo)));
       } else {
         for (label in taxo) {
@@ -1267,7 +1252,7 @@
           $ul.append($('<li/>', {
             'class': 'dropdown-submenu'
           }).append($('<a/>', {
-            href: '#'
+            href: ''
           }).text(label)).append(renderTaxonomy(lang, submenu)));
         }
       }

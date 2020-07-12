@@ -1,5 +1,5 @@
 (function(){
-  var Links, Nav, UserPref, DotSlash, React, isMoedictDesktop, $body, ref$, p, i, a, b, form, h1, div, main, span, br, h3, h4, button, label, table, nav, tr, td, th, input, hr, meta, ul, ol, li, small, any, map, createClass, withProperties, divInline, h1Name, nbsp, CurrentId, Result, Term, HASHOF, XREFLABELOF, XRefs, Star, Heteronym, DefinitionList, Definition, List, untag, groupBy, keyMap, decodeLangPart, slice$ = [].slice, replace$ = ''.replace, join$ = [].join, split$ = ''.split, this$ = this;
+  var Links, Nav, UserPref, DotSlash, React, isMoedictDesktop, $body, ref$, p, i, a, b, form, h1, div, main, span, br, h3, h4, button, label, table, nav, tr, td, th, input, hr, meta, ul, ol, li, small, any, map, createClass, withProperties, divInline, h1Name, nbsp, CurrentId, Result, Term, PREFIX_OF, XREFLABELOF, XRefs, Star, Heteronym, DefinitionList, Definition, List, untag, groupBy, keyMap, decodeLangPart, slice$ = [].slice, replace$ = ''.replace, join$ = [].join, split$ = ''.split, this$ = this;
   Links = require('./scripts/Links.jsx');
   Nav = require('./scripts/Nav.jsx');
   UserPref = require('./scripts/UserPref.jsx');
@@ -77,9 +77,8 @@
       var ref$, LANG, H, ref1$, title, heteronyms, xrefs, tag, stem, aStroke, $char, list, res$, i$, len$, key, props;
       ref$ = this.props, LANG = ref$.LANG, H = (ref1$ = ref$.H) != null
         ? ref1$
-        : HASHOF[LANG], heteronyms = ref$.heteronyms, xrefs = ref$.xrefs, tag = ref$.tag, stem = ref$.stem;
-      H = replace$.call(H, /^#/, '');
-      H = DotSlash + "#" + H;
+        : PREFIX_OF[LANG], heteronyms = ref$.heteronyms, xrefs = ref$.xrefs, tag = ref$.tag, stem = ref$.stem;
+      H = `${DotSlash}${H}`;
       CurrentId = this.props.id;
       if (tag != null) {
         aStroke = span({
@@ -118,10 +117,10 @@
       return divInline.apply(null, [{}].concat(slice$.call(list)));
     }
   });
-  HASHOF = {
-    p: '#~',
-    m: "#!",
-    s: '#:'
+  PREFIX_OF = {
+    p: '~',
+    m: "!",
+    s: ':'
   };
   XREFLABELOF = {
     p: '方',
@@ -138,7 +137,7 @@
         var i$, ref$, len$, ref1$, results$ = [];
         for (i$ = 0, len$ = (ref$ = xrefs).length; i$ < len$; ++i$) {
           ref1$ = ref$[i$], lang = ref1$.lang, words = ref1$.words;
-          H = DotSlash + "" + HASHOF[lang];
+          H = `${DotSlash}${PREFIX_OF[lang]}`;
           results$.push(div({
             key: lang,
             className: 'xref-line'
@@ -446,8 +445,7 @@
       if (!terms) {
         return div({});
       }
-      H = replace$.call(H, /^#/, '');
-      H = DotSlash + "#" + H;
+      H = `${DotSlash}${H}`;
       id = replace$.call(id, /^[@=]/, '');
       terms = replace$.call(terms, /^[^"]*/, '');
       list = [h1Name({}, id)];
@@ -627,7 +625,7 @@
       return keyMap[k] + ':';
     });
 
-    H = DotSlash + "" + (HASHOF[LANGORH] || LANGORH);
+    H = `${DotSlash}${PREFIX_OF[LANGORH] || LANGORH}`;
     part = part.replace(/([「【『（《])`([^~]+)~([。，、；：？！─…．·－」』》〉]+)/g, function(arg$, pre, word, post){
       return "<span class=\\\"punct\\\">" + pre + "<a href=\\\"" + H + word + "\\\">" + word + "</a>" + post + "</span>";
     });
