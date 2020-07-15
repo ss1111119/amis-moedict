@@ -1,0 +1,1 @@
+web: bash -c 'source /etc/profile.d/rvm.sh && echo "$(ruby -v)" && cd amis-deploy && falcon serve -c config.ru --bind http://0:$PORT'
