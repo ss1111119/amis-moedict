@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# falcon serve -c config.ru --bind http://localhost:8888
 
 class SetDictMeta
   def initialize(app)

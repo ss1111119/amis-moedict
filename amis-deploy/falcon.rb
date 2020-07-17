@@ -1,5 +1,6 @@
 #!/usr/bin/env falcon-host
 # frozen_string_literal: true
+# $ PORT=8888 bundle exec ./falcon.rb
 
 load :rack, :supervisor
 
