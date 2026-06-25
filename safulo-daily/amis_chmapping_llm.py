@@ -25,7 +25,7 @@ SKIP_PREFIXES = ("要","指","〔","即將","將要","把","去","在","也","�
 
 def call_ollama(stem, defs):
     defs_str = "；".join(defs[:2])
-    prompt = f"阿美語詞條「{stem}」定義：{defs_str}。提取中文搜尋關鍵詞（名詞或形容詞，逗號分隔，無則回「無」）："
+    prompt = f"阿美語詞條「{stem}」定義：{defs_str}。提取適合當搜尋的中文關鍵詞，只要一般名詞或形容詞，排除地名、人名、機關等專有名詞，逗號分隔，無則回「無」："
     # gemma4 用 RENDERER/PARSER + thinking 機制，必須走 /api/chat 並關閉 think，
     # 否則 /api/generate 會把 thinking 連同答案一起吃掉、回傳空字串。
     data = json.dumps({
