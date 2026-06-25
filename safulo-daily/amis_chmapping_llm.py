@@ -25,14 +25,7 @@ SKIP_PREFIXES = ("要","指","〔","即將","將要","把","去","在","也","�
 
 def call_ollama(stem, defs):
     defs_str = "；".join(defs[:2])
-    prompt = (
-        f"你是阿美語字典編輯。\n"
-        f"詞條「{stem}」的中文定義：{defs_str}\n"
-        f"請提取1-4個適合當搜尋關鍵詞的中文名詞或形容詞。\n"
-        f"不要動詞框架、不要括號舉例、不要泛用詞（東西/對象/地方）。\n"
-        f"若無合適的輸出「無」。\n"
-        f"只輸出關鍵詞，逗號分隔："
-    )
+    prompt = f"阿美語詞條「{stem}」定義：{defs_str}。提取中文搜尋關鍵詞（名詞或形容詞，逗號分隔，無則回「無」）："
     data = json.dumps({
         "model": MODEL,
         "prompt": prompt,
