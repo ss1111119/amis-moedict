@@ -27,3 +27,6 @@ prefix.json
 /revdict-amis-ex.txt
 /styles.css
 /js/deps.js
+
+# Python virtual environment
+.venv/
