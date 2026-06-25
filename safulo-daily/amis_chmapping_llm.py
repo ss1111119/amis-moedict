@@ -71,7 +71,7 @@ def main():
         print(f"無法連線 Ollama: {e}", file=sys.stderr)
         sys.exit(1)
 
-    # 載入 checkpoint 或現有 mapping
+    # 載入 checkpoint 或從空白開始
     if CHECKPOINT.exists():
         state = json.loads(CHECKPOINT.read_text())
         mapping = state["mapping"]
@@ -79,9 +79,9 @@ def main():
         print(f"從 checkpoint 繼續：已處理 {len(processed)} 個，mapping {len(mapping)} 筆",
               file=sys.stderr)
     else:
-        mapping = json.loads(CH_MAPPING.read_text()) if CH_MAPPING.exists() else {}
+        mapping = {}
         processed = set()
-        print(f"從現有 ch-mapping 出發（{len(mapping)} 筆）", file=sys.stderr)
+        print("從零開始重建 ch-mapping", file=sys.stderr)
 
     files = sorted([f for f in DOCS_S.glob("*.json") if f.name not in SKIP])
 
