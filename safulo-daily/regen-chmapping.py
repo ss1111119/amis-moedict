@@ -27,6 +27,8 @@ for fn in list_vocabs():
     stem = j['stem']
     for h in j['h']:
         for d in h['d']:
+            if 'f' not in d:
+                continue
             cmn = d['f']
             tagged = [word for word, flag in pseg.cut(cmn) if flag != 'x' and len(word) > 1]
             for t in tagged:
