@@ -12,7 +12,7 @@ CH_MAPPING = DOCS_S / "ch-mapping.json"
 CHECKPOINT = Path("amis-chmapping-checkpoint.json")
 SKIP       = {"ch-mapping.json", "ch-mapping-smart.json", "ch-mapping-new.json",
               "index.json", "stem-words.json"}
-OLLAMA_URL = "http://172.18.0.2:11434/api/generate"
+OLLAMA_URL = "http://172.18.0.2:11434/api/chat"
 MODEL      = "gemma4:26b"
 SAVE_EVERY = 100
 
@@ -26,10 +26,13 @@ SKIP_PREFIXES = ("要","指","〔","即將","將要","把","去","在","也","�
 def call_ollama(stem, defs):
     defs_str = "；".join(defs[:2])
     prompt = f"阿美語詞條「{stem}」定義：{defs_str}。提取中文搜尋關鍵詞（名詞或形容詞，逗號分隔，無則回「無」）："
+    # gemma4 用 RENDERER/PARSER + thinking 機制，必須走 /api/chat 並關閉 think，
+    # 否則 /api/generate 會把 thinking 連同答案一起吃掉、回傳空字串。
     data = json.dumps({
         "model": MODEL,
-        "prompt": prompt,
+        "messages": [{"role": "user", "content": prompt}],
         "stream": False,
+        "think": False,
         "options": {"temperature": 0.1, "num_predict": 60}
     }).encode()
     try:
@@ -37,9 +40,9 @@ def call_ollama(stem, defs):
             OLLAMA_URL, data=data,
             headers={"Content-Type": "application/json"}
         )
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=60) as resp:
             result = json.loads(resp.read())
-            return result.get("response", "").strip()
+            return result.get("message", {}).get("content", "").strip()
     except Exception as e:
         print(f"  [錯誤] {e}", file=sys.stderr)
         return ""
@@ -61,7 +64,7 @@ def parse_keywords(response):
 
 def main():
     # 確認 Ollama 連線
-    test_url = OLLAMA_URL.replace("/api/generate", "/api/tags")
+    test_url = OLLAMA_URL.replace("/api/chat", "/api/tags")
     try:
         with urllib.request.urlopen(test_url, timeout=5) as r:
             tags = json.loads(r.read())
