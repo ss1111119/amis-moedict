@@ -21,6 +21,8 @@ spec = importlib.util.spec_from_file_location("lk", HERE / "local-keywords.py")
 lk = importlib.util.module_from_spec(spec); spec.loader.exec_module(lk)
 
 PLACE_MARK = re.compile(r"部落名稱|社名|地名")
+# 結構性單字：保留水/火/夢/愛等內容單字，只擋這些非搜尋詞的單字
+JUNK_1CHAR = set("人者物事詞藉處們家名指")
 
 def clean(kws):
     out = []
@@ -29,8 +31,11 @@ def clean(kws):
         # 正規化尾字：推走的→推走、來過了→來過、對半分吧→對半分（剝後須 >=2 字）
         while k and k[-1] in "的了吧呢啊" and len(k) - 1 >= 2:
             k = k[:-1]
-        if len(k) >= 2 and k not in lk.GENERIC and not re.search(r"[A-Za-z0-9]", k):
-            out.append(k)
+        if not k or k in lk.GENERIC or re.search(r"[A-Za-z0-9]", k):
+            continue
+        if len(k) == 1 and (k in JUNK_1CHAR or k in lk.STOP_1CHAR):
+            continue  # 擋 人/者/藉 等結構性單字，但保留 水/火/夢/愛
+        out.append(k)
     return sorted(set(out))
 
 def dedup_superstring(kws):
@@ -73,14 +78,14 @@ def load_defs(stem):
 
 
 def invert_and_write(final, out_path):
-    """final: {stem: [kw]} → 反轉成 {kw: 'stem1,stem2'}（按頻次排序），併 placename-map。"""
+    """final: {stem: [kw]} → 反轉 {kw: 'stem1,stem2'}，併 placename-map。
+    詞根優先排序：同一中文詞下，關鍵詞數少的 stem（越純粹=越像詞根）排前面。"""
     inv = {}
     for stem, kws in final.items():
         for kw in kws:
-            inv.setdefault(kw, {}).setdefault(stem, 0)
-            inv[kw][stem] += 1
-    out = {k: ",".join(sorted(v, key=lambda s: -v[s]))
-           for k, v in inv.items() if not re.search(r"[a-z0-9]", k)}
+            inv.setdefault(kw, []).append(stem)
+    out = {k: ",".join(sorted(stems, key=lambda s: (len(final[s]), len(s))))
+           for k, stems in inv.items() if not re.search(r"[a-z0-9]", k)}
     # 併入 placename-map（不覆蓋既有詞義）
     pm = HERE.parent / "placename-map.json"
     if pm.exists():
