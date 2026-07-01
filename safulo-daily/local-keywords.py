@@ -26,12 +26,23 @@ SHELL_TAILS = {
 }
 # 開頭要剝的動作/語法前綴（長到短）
 PREFIXES = ["指即將","指將要","指要","指可以","指用來","指","即將","將要",
-            "可以","用來","用以","用作","用做","要","也","正在","曾經"]
+            "可以","用來","用以","用作","用做","要","也","正在","曾經","請"]
 # 單字內容詞放行：名詞(夢/水/火/刀/魚)+動詞(愛/咬/跑/砍)；不放形容詞(大/小/長/好=噪音)
 ALLOW_1CHAR_POS = ("n", "v")
 # 單字黑名單（即使 jieba 標成 n/v 也擋）：語法字 + 泛用動詞
 STOP_1CHAR = (set("的了是在和與或也都很不沒有指這那個之其所為被把將及等於以由向")
               | set("做弄搞用使讓叫成去來到放給予取得有作"))
+
+# bug1：括號內若是元描述註記（表促使/命令/詞性/借詞…），整組丟棄，不可當關鍵詞
+META = re.compile(r"促使|命令|短語|短詞|前綴|後綴|感嘆|助詞|疊詞|借詞|口語|語氣|"
+                  r"副詞|介詞|連接詞|名詞|動詞|形態|主格|多數|否定|指過去|"
+                  r"指人|指物|一般放|表示|名稱|地名|社名")
+# bug2：行政地理子句（縣/鄉/鎮/村 + 今/地區/部落…）不做通用抽詞，交給 placename-map
+ADMIN = re.compile(r"[縣鄉鎮村]")
+ADMIN_CTX = re.compile(r"今|現今|地區|一帶|部落|地名|社名|移居|臺灣|台灣")
+
+def _is_admin(c):
+    return bool(ADMIN.search(c)) and bool(ADMIN_CTX.search(c))
 
 def _strip_prefix(t):
     for p in PREFIXES:
@@ -59,17 +70,23 @@ def extract_keywords(definition):
     text = re.sub(r"[。！？\s]+$", "", definition).strip()
     if not text:
         return []
-    # 括號內容單列
+    # 括號內容單列（bug1：跳過元描述註記、過長描述、以「的」結尾者）
     for m in re.findall(r"[（(]([^）)]+)[）)]", text):
+        if META.search(m):
+            continue
         for part in re.split(r"[、，,]", m):
             part = part.strip()
-            if part and part not in GENERIC and not re.search(r"[A-Za-z0-9]", part):
+            if (part and part not in GENERIC and len(part) <= 6
+                    and not part.endswith("的") and not META.search(part)
+                    and not re.search(r"[A-Za-z0-9]", part)):
                 kws.add(part)
     text = re.sub(r"[（(][^）)]*[）)]", "", text).strip()
     # 逗號/頓號/分號切子句
     for part in re.split(r"[，、；,]", text):
         part = _strip_prefix(part.strip())
         if not part:
+            continue
+        if _is_admin(part):          # bug2：行政地理子句略過（不炸成單字）
             continue
         m = re.search(r"^(.*?)的(.+)$", part)
         if m:
@@ -90,7 +107,11 @@ def extract_keywords(definition):
                 for w in _seg_content(_strip_prefix(core)):
                     kws.add(w)
                 continue
-        # 無「的」：整句當內容，斷詞抽
+        # 無「的」：短子句(<=4字)整塊保留，避免 jieba 拆錯複合詞（鋤頭→鋤/頭、牛軛→牛）
+        if len(part) <= 4 and part not in GENERIC and not META.search(part):
+            kws.add(part)
+            continue
+        # 較長子句才斷詞抽
         for w in _seg_content(part):
             kws.add(w)
     return [k for k in kws if k and not re.search(r"[A-Za-z0-9]", k)]
