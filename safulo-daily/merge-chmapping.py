@@ -23,15 +23,17 @@ lk = importlib.util.module_from_spec(spec); spec.loader.exec_module(lk)
 PLACE_MARK = re.compile(r"部落名稱|社名|地名")
 # 結構性單字：保留水/火/夢/愛等內容單字，只擋這些非搜尋詞的單字
 JUNK_1CHAR = set("人者物事詞藉處們家名指")
+# 垃圾關鍵詞：LLM 拒絕/元描述字串 + 借詞語言註記（非真詞義）
+REJECT = re.compile(r"無法進行提取|根據您|定義部分|僅顯示|借詞|^日語$|^英語$|^閩南語$")
 
 def clean(kws):
     out = []
     for k in kws:
-        k = k.strip()
+        k = k.strip().strip("〈〉《》「」〔〕【】")
         # 正規化尾字：推走的→推走、來過了→來過、對半分吧→對半分（剝後須 >=2 字）
         while k and k[-1] in "的了吧呢啊" and len(k) - 1 >= 2:
             k = k[:-1]
-        if not k or k in lk.GENERIC or re.search(r"[A-Za-z0-9]", k):
+        if not k or k in lk.GENERIC or re.search(r"[A-Za-z0-9]", k) or REJECT.search(k):
             continue
         if len(k) == 1 and (k in JUNK_1CHAR or k in lk.STOP_1CHAR):
             continue  # 擋 人/者/藉 等結構性單字，但保留 水/火/夢/愛
